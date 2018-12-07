@@ -10,7 +10,7 @@ public class Worker {
 
     public void assignTask(Character task) {
         this.task = task;
-        this.timeLeft = 60 + (task - 'A' + 1);
+        this.timeLeft = 60 + (task - 'A');
 //        this.timeLeft = (task - 'A' + 1);
     }
 
