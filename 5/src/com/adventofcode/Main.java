@@ -1,4 +1,4 @@
-package ro.ligaac;
+package com.adventofcode;
 
 import java.io.IOException;
 import java.nio.file.Files;

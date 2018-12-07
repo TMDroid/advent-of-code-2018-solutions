@@ -1,4 +1,4 @@
-package ro.ligaac;
+package com.adventofcode;
 
 public class Worker {
     private Character task;

@@ -1,13 +1,10 @@
-package ro.ligaac;
+package com.adventofcode;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Main {
