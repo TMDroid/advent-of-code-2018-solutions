@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,8 +58,16 @@ public class Main {
                 if (!allEvents.contains(value)) allEvents.add(value);
             }
 
-            String completedEvents = "";
+            StringBuilder completedEvents = new StringBuilder();
             ArrayList<Character> startWith = new ArrayList<>(allEvents);
+            ArrayList<Character> assignedTasks = new ArrayList<>();
+            ArrayList<Worker> workers = new ArrayList<Worker>() {{
+                add(new Worker());
+                add(new Worker());
+                add(new Worker());
+                add(new Worker());
+                add(new Worker());
+            }};
 
             /**
              * from all the events, eliminate the ones that depend on any other
@@ -78,46 +87,77 @@ public class Main {
              * sort and get the first one to start with it
              */
             Collections.sort(startWith);
-            Character toStartWith = startWith.get(0);
 
             System.out.println(dependencyMap);
+            System.out.println("T\t\t1\t\t2\t\t3\t\t4\t\t5\t\ts");
 
             /**
              * while not all events were completed
              */
-            while (completedEvents.length() < allEvents.size()) {
-                //add current event
-                completedEvents += toStartWith;
-
-                startWith.remove(toStartWith);
-
+            int seconds = 0;
+            boolean working = true;
+            while (completedEvents.length() < allEvents.size() || working) {
                 /**
                  * Find next event
                  */
-                List<Character> eventsChecked = Arrays.stream(completedEvents.split("")).map(item -> item.charAt(0)).collect(Collectors.toList());
-                String finalCompletedEvents = completedEvents;
+                List<Character> eventsChecked = Arrays.stream(completedEvents.toString().split("")).map(item -> item.length() > 0 ? item.charAt(0) : null).collect(Collectors.toList());
                 dependencyMap.forEach((Character key, List<Character> deps) -> {
-                    List<Character> depss = new ArrayList<>(deps);
 
-                    for (Character e : eventsChecked) {
-                        if (depss.contains(e)) {
-                            depss.remove(e);
+                    if (!deps.isEmpty()) {
+                        for (Character e : eventsChecked) {
+                            if (deps.contains(e)) {
+                                deps.remove(e);
+                            }
                         }
                     }
 
-                    boolean alreadyUsed = finalCompletedEvents.indexOf(key) != -1;
-                    if (depss.size() == 0 && !alreadyUsed && !startWith.contains(key)) {
-                        startWith.add(key);
+                    if (!completedEvents.toString().contains(String.valueOf(key))) {
+                        if (deps.isEmpty() && !startWith.contains(key) && !assignedTasks.contains(key)) {
+                            startWith.add(key);
+                        }
                     }
-                });
-                Collections.sort(startWith);
 
-                if(startWith.size() == 0) break;
-                toStartWith = startWith.get(0);
+                });
+//                Collections.sort(startWith);
+
+                if (startWith.size() > 0) {
+                    for (int i = 0; i < startWith.size(); i++) {
+                        if (startWith.size() > 0) {
+                            Character task = startWith.get(0);
+
+                            for (Worker w : workers) {
+                                if (w.isPaused()) {
+                                    w.assignTask(task);
+                                    assignedTasks.add(task);
+                                    startWith.remove(task);
+                                    i--;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                System.out.print(seconds + "\t\t");
+                for (Worker w : workers) {
+                    System.out.print((w.getTimeLeft() > 0 ? w.getTask() + "(" + w.getTimeLeft() + ")" : "....") + "\t\t");
+                    w.decrementTime();
+
+                    if (assignedTasks.contains(w.getTask()) && w.isPaused()) {
+                        //add current event
+                        completedEvents.append(w.getTask());
+                        assignedTasks.remove(w.getTask());
+                    }
+                }
+                System.out.println(completedEvents);
+
+                working = workers.stream().map(Worker::isWorking).reduce((acc, current) -> acc || current).orElseThrow(NoSuchElementException::new);
+                seconds++;
             }
 
 
             System.out.println(completedEvents);
+            System.out.println(seconds);
         } catch (IOException e) {
             e.printStackTrace();
         }
