@@ -41,17 +41,26 @@ public class Main {
             return 0;
         }
 
-        Integer partialSum = 0;
-        if(node.getChildren().size() > 0) {
+        if(node.getChildren().size() == 0) {
+            Integer metadataSum = 0;
 
-            for(Node child : node.getChildren()) {
-                partialSum += calculateMetadataSum(child);
+            for(Integer metadata : node.getMetadata()) {
+                metadataSum += metadata;
             }
 
+            return metadataSum;
         }
 
+        Integer partialSum = 0;
+
         for(Integer i : node.getMetadata()) {
-            partialSum += i;
+            if(i == 0) continue;
+            i--;
+
+            Node n = i < node.getChildren().size() ? node.getChildren().get(i) : null;
+            if(n != null) {
+                partialSum += calculateMetadataSum(n);
+            }
         }
 
         return partialSum;
